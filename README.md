@@ -1,2 +1,2 @@
-# dns-query
-Pure Rust DNS Query
+# dns-resolver
+Pure Rust DNS Resolver
