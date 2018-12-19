@@ -1,0 +1,6 @@
+[package]
+name = "dnsresolver"
+version = "0.0.1"
+authors = ["Michael Bohn <spaceodyssey@gmx.de>"]
+
+[dependencies]
