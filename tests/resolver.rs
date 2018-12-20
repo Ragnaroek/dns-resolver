@@ -11,7 +11,7 @@ fn test_convert_example_query_to_bytes() {
             opcode: resolver::Opcode::StandardQuery,
             aa: false,
             tc: false,
-            rd: false,
+            rd: true,
             ra: false,
             rcode: resolver::Rcode::NoError,
             qdcount: 1,
@@ -19,14 +19,25 @@ fn test_convert_example_query_to_bytes() {
             nscount: 0,
             arcount: 0,
         },
-        questions: Vec::new(),
+        questions: vec![
+            resolver::Question {
+                qname: vec![resolver::Label::from_string("www".to_string()).unwrap(),
+                            resolver::Label::from_string("gamestar".to_string()).unwrap(),
+                            resolver::Label::from_string("de".to_string()).unwrap()],
+                qtype: resolver::QType::A,
+                qclass: resolver::QClass::IN,
+            }]
     };
 
-    //should yield:
-    /* 
-    c6 9c 01 00 00 01
-    00 00 00 00 00 00 03 77 77 77 08 67 61 6d 65 73
-    74 61 72 02 64 65 00 00 01 00 01
-    */
-
+    let bytes = msg.to_bytes();
+    assert_eq!(bytes, vec![
+        0xC6, 0x9C, 0x01, 0x00,
+        0x00, 0x01, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,/*
+        0x03, 0x77, 0x77, 0x77,
+        0x08, 0x67, 0x61, 0x6d,
+        0x65, 0x73, 0x74, 0x61,
+        0x72, 0x02, 0x64, 0x65,
+        0x00, 0x00, 0x01, 0x00,
+        0x01*/])
 }
