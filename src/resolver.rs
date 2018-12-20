@@ -44,12 +44,20 @@ pub struct Header {
     pub arcount: u16,
 }
 
+#[derive(Copy, Clone)]
 pub enum QType {
-    A,
+    A = 1,
+    ANY = 355,
+    //TODO Add more types (3.2.3 rfc1035)
 }
 
+#[derive(Copy, Clone)]
 pub enum QClass {
-    IN,
+    IN = 1,
+    CS = 2,
+    CH = 3,
+    HS = 4,
+    ANY = 255,
 }
 
 pub struct Label {
@@ -101,7 +109,7 @@ impl DNSMessage {
 
 /* Header Layout
                                1  1  1  1  1  1
-0   1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+ 0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                      ID                       |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -141,8 +149,30 @@ impl DNSMessage {
         push_u16(&mut bytes, 0); //TODO NSCOUNT
         push_u16(&mut bytes, 0); //TODO ARCOUNT
 
-        //TODO fill question data
-
+/* Question List format
+                               1  1  1  1  1  1
+ 0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                                               |
+/                     QNAME                     /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                     QTYPE                     |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                     QCLASS                    |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*/
+        for q in &self.questions {
+            for l in &q.qname {
+                bytes.push(l.len() as u8);
+                for c in &l.data { //TODO find nicer (and faster?) way for this
+                    bytes.push(*c);
+                }
+            }
+            bytes.push(0); //label termination
+            push_u16(&mut bytes, q.qtype as usize);
+            push_u16(&mut bytes, q.qclass as usize);
+        }
         return bytes;
     }
 
