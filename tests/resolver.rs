@@ -1,31 +1,31 @@
 extern crate dnsresolver;
 
-use dnsresolver::resolver;
+use dnsresolver::*;
 
 #[test]
 fn test_convert_example_query_to_bytes() {
-    let msg = resolver::DNSMessage{
-        header: resolver::Header{
+    let msg = DNSMessage{
+        header: Header{
             id: 0xC69C,
-            qr: resolver::QR::Query,
-            opcode: resolver::Opcode::StandardQuery,
+            qr: QR::Query,
+            opcode: Opcode::StandardQuery,
             aa: false,
             tc: false,
             rd: true,
             ra: false,
-            rcode: resolver::Rcode::NoError,
+            rcode: Rcode::NoError,
             qdcount: 1,
             ancount: 0,
             nscount: 0,
             arcount: 0,
         },
         questions: vec![
-            resolver::Question {
-                qname: vec![resolver::Label::from_string("www".to_string()).unwrap(),
-                            resolver::Label::from_string("gamestar".to_string()).unwrap(),
-                            resolver::Label::from_string("de".to_string()).unwrap()],
-                qtype: resolver::QType::A,
-                qclass: resolver::QClass::IN,
+            Question {
+                qname: vec![Label::from_string("www".to_string()).unwrap(),
+                            Label::from_string("gamestar".to_string()).unwrap(),
+                            Label::from_string("de".to_string()).unwrap()],
+                qtype: QType::A,
+                qclass: QClass::IN,
             }]
     };
 
