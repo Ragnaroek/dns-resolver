@@ -43,7 +43,6 @@ fn main() -> io::Result<()> {
             }]
     };
 
-    //TODO send real dns query to google DNS
     socket.send_to(&msg.to_bytes(), addr.next().unwrap())?;
     println!("send ok");
 

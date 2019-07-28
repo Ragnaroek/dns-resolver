@@ -186,4 +186,8 @@ impl DNSMessage {
         }
         len
     }
+
+    pub fn from_bytes(bytes: &[u8]) -> DNSMessage {
+        
+    }
 }
