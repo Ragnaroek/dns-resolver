@@ -1,14 +1,12 @@
-
 extern crate dnsresolver;
 
-use std::net::UdpSocket;
-use std::net::ToSocketAddrs;
 use std::io;
+use std::net::ToSocketAddrs;
+use std::net::UdpSocket;
 
 use dnsresolver::*;
 
 fn main() -> io::Result<()> {
-
     println!("test dns query");
 
     let socket = UdpSocket::bind("0.0.0.0:0")?;
@@ -18,8 +16,8 @@ fn main() -> io::Result<()> {
     let mut addr = "8.8.8.8:53".to_socket_addrs()?;
     println!("to addr ok");
 
-    let msg = DNSMessage{
-        header: Header{
+    let msg = DNSMessage {
+        header: Header {
             id: 0xC69C,
             qr: QR::Query,
             opcode: Opcode::StandardQuery,
@@ -33,14 +31,15 @@ fn main() -> io::Result<()> {
             nscount: 0,
             arcount: 0,
         },
-        questions: vec![
-            Question {
-                qname: vec![Label::from_string("www".to_string()).unwrap(),
-                            Label::from_string("gamestar".to_string()).unwrap(),
-                            Label::from_string("de".to_string()).unwrap()],
-                qtype: QType::A,
-                qclass: QClass::IN,
-            }]
+        questions: vec![Question {
+            qname: vec![
+                Label::from_string("www".to_string()).unwrap(),
+                Label::from_string("gamestar".to_string()).unwrap(),
+                Label::from_string("de".to_string()).unwrap(),
+            ],
+            qtype: QType::A,
+            qclass: QClass::IN,
+        }],
     };
 
     socket.send_to(&msg.to_bytes(), addr.next().unwrap())?;

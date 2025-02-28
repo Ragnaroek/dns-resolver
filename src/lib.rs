@@ -1,4 +1,3 @@
-
 /*
 struct field names are straight out of
 https://tools.ietf.org/html/rfc1035
@@ -61,13 +60,15 @@ pub enum QClass {
 }
 
 pub struct Label {
-    data: Vec<u8>
+    data: Vec<u8>,
 }
 
 impl Label {
     pub fn from_string(str: String) -> Option<Label> {
         if str.is_ascii() {
-            Some(Label{data: str.into_bytes()})
+            Some(Label {
+                data: str.into_bytes(),
+            })
         } else {
             None
         }
@@ -90,7 +91,7 @@ pub struct DNSMessage {
     pub questions: Vec<Question>,
 }
 
-fn push_u16(vec: &mut Vec<u8>, l : usize) {
+fn push_u16(vec: &mut Vec<u8>, l: usize) {
     if l <= std::u8::MAX as usize {
         vec.push(0);
         vec.push(l as u8);
@@ -104,40 +105,39 @@ fn push_u16(vec: &mut Vec<u8>, l : usize) {
 
 impl DNSMessage {
     pub fn to_bytes(&self) -> Vec<u8> {
-
         let mut bytes = Vec::with_capacity(self.num_bytes());
 
-/* Header Layout
-                               1  1  1  1  1  1
- 0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                      ID                       |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                    QDCOUNT                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                    ANCOUNT                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                    NSCOUNT                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                    ARCOUNT                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/
+        /* Header Layout
+                                       1  1  1  1  1  1
+         0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                      ID                       |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                    QDCOUNT                    |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                    ANCOUNT                    |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                    NSCOUNT                    |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                    ARCOUNT                    |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        */
 
         let h = &self.header;
         let id_bytes = h.id.to_be_bytes();
         bytes.push(id_bytes[0]);
         bytes.push(id_bytes[1]);
 
-        let mut flags1 : u8 = 0;
-        flags1 |= h.qr as u8;// qr_flags(h.qr);
+        let mut flags1: u8 = 0;
+        flags1 |= h.qr as u8; // qr_flags(h.qr);
         flags1 |= h.opcode as u8;
         flags1 |= (h.aa as u8) << 2;
         flags1 |= (h.tc as u8) << 1;
         flags1 |= h.rd as u8;
 
-        let mut flags2 : u8 = 0;
+        let mut flags2: u8 = 0;
         flags2 |= (h.ra as u8) << 7;
         flags2 |= h.rcode as u8;
 
@@ -149,23 +149,24 @@ impl DNSMessage {
         push_u16(&mut bytes, 0); //TODO NSCOUNT
         push_u16(&mut bytes, 0); //TODO ARCOUNT
 
-/* Question List format
-                               1  1  1  1  1  1
- 0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                                               |
-/                     QNAME                     /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                     QTYPE                     |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                     QCLASS                    |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/
+        /* Question List format
+                                       1  1  1  1  1  1
+         0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                                               |
+        /                     QNAME                     /
+        /                                               /
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                     QTYPE                     |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        |                     QCLASS                    |
+        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+        */
         for q in &self.questions {
             for l in &q.qname {
                 bytes.push(l.len() as u8);
-                for c in &l.data { //TODO find nicer (and faster?) way for this
+                for c in &l.data {
+                    //TODO find nicer (and faster?) way for this
                     bytes.push(*c);
                 }
             }
